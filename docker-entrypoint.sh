@@ -2,7 +2,7 @@
 
 function build_tkglitch_wine() {
     if [ ! -d $(pwd)/src ]; then
-        git clone https://github.com/Frogging-Family/wine-tkg-git.git $(pwd)/src
+        git clone https://github.com/loopyd/wine-tkg-git.git $(pwd)/src
     fi
     if [ -f $(pwd)/wine-tkg.cfg ]; then
         rm -f $(pwd)/src/wine-tkg-git/customization.cfg
