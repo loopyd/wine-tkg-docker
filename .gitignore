@@ -1,0 +1,6 @@
+workdir/*
+!workdir/.gitkeep
+!workdir/*.cfg
+!workdir/*.json
+!workdir/*.win64
+!workdir/*.win32
