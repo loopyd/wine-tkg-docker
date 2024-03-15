@@ -12,8 +12,9 @@ TIMEZONE=${TIMEZONE:-}
 NODE_VERSION=${NODE_VERSION:-}
 GOSU_VERSION=${GOSU_VERSION:-}
 PYTHON_VERSION=${PYTHON_VERSION:-}
+BARGS=""
 
-function __exit_trap() {
+function _exit_trap() {
     local exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
         echo "Error: Process exited with status code: $exit_code"
@@ -23,7 +24,7 @@ function __exit_trap() {
     exit $exit_code
 }
 
-trap __exit_trap EXIT SIGINT SIGTERM ERR
+trap _exit_trap EXIT SIGINT SIGTERM ERR
 
 function __run() {
     echo "Running command: $*"
@@ -36,13 +37,16 @@ function __run() {
 function usage() {
     echo "Deity Build System"
     echo ""
-    echo "Usage: $0 [action] [options]"
+    echo "Usage: $0 [action] [options] [args]"
     echo ""
     echo "  Actions:"
     echo ""
     echo "    init:   Initialize the winebuilder container"
     echo "    shell:  Start a shell in the winebuilder container"
     echo "    build:  Start the build process in the winebuilder container"
+    echo "    wine32: Run wine32 in the container"
+    echo "    wine64: Run wine64 in the container"
+    echo "    wineshell: Run wine-tkg-interactive in the container"
     echo ""
     echo "  Options:"
     echo "    -w, --workdir:  The working directory to mount in the container"
@@ -58,6 +62,9 @@ function usage() {
     echo "    -g, --gosu-version:     The gosu version to use"
     echo "    -p, --python-version:   The python version (using pyenv)"
     echo ""
+    echo "  Additional Arguments [args]:"
+    echo ""
+    echo "    Any additional arguments will be passed to the action command's wine-tkg script"
     exit 1
 }
 
@@ -68,7 +75,7 @@ function parse_args() {
                 usage
                 break
                 ;;
-            shell|build|init)
+            shell|build|init|wine32|wine64|wineshell)
                 ACTION=$1
                 shift
                 ;;
@@ -101,9 +108,8 @@ function parse_args() {
                 shift
                 ;;
             *)
-                echo "Unknown option: $1"
-                usage
-                break
+                BARGS+=( "$1" )
+                shift
                 ;;
         esac
     done
@@ -151,14 +157,35 @@ function main() {
                 --volume ${WORKDIR}:/app                            \
                 --user $(id -u ${APP_USER}):$(id -g ${APP_USER})    \
                 --rm -it --name wine_builder winebuilder:latest     \
-                shell
+                shell ${BARGS[@]}
             ;;
         build)
             docker container run                                    \
                 --volume ${WORKDIR}:/app                            \
                 --user $(id -u ${APP_USER}):$(id -g ${APP_USER})    \
                 --rm -it --name wine_builder winebuilder:latest     \
-                build
+                build ${BARGS[@]}
+            ;;
+        wine32)
+            docker container run                                    \
+                --volume ${WORKDIR}:/app                            \
+                --user $(id -u ${APP_USER}):$(id -g ${APP_USER})    \
+                --rm -it --name wine_builder winebuilder:latest     \
+                wine32 ${BARGS[@]}
+            ;;
+        wine64)
+            docker container run                                    \
+                --volume ${WORKDIR}:/app                            \
+                --user $(id -u ${APP_USER}):$(id -g ${APP_USER})    \
+                --rm -it --name wine_builder winebuilder:latest     \
+                wine64 ${BARGS[@]}
+            ;;
+        wineshell)
+            docker container run                                    \
+                --volume ${WORKDIR}:/app                            \
+                --user $(id -u ${APP_USER}):$(id -g ${APP_USER})    \
+                --rm -it --name wine_builder winebuilder:latest     \
+                wineshell ${BARGS[@]}
             ;;
         *)
             echo "Unknown action: $ACTION"
