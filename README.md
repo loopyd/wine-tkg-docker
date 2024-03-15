@@ -55,4 +55,4 @@ You can run:
 ./run.sh --help
 ```
 
-If you'd like some measure of assistance.  Contributions to documentation for this project are welcome.  Perhaps this readme will exapdn as contributions come in...ribbit!
+If you'd like some measure of assistance.  Contributions to documentation for this project are welcome.  Perhaps this readme will exapnd as contributions come in...ribbit!
