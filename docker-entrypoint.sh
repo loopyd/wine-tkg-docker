@@ -12,7 +12,7 @@ _exit_trap() {
 }
 trap _exit_trap EXIT SIGINT SIGTERM ERR
 
-build_tkglitch_wine() {
+build_wine() {
     local ARGS=( $@ )
     if [ ! -d $(pwd)/src ]; then
         git clone https://github.com/loopyd/wine-tkg-git.git $(pwd)/src
@@ -34,8 +34,8 @@ build_tkglitch_wine() {
 }
 
 run_wine() {
-    local ARCH=$1
-    if [ "$ARCH" != "32" ] && [ "$ARCH" != "64" ] || [ -z "$ARCH" ] || [ "$ARCH" != "interactive" ]; then
+    local ARCH="$1"
+    if [ "$ARCH" != "32" ] && [ "$ARCH" != "64" ] && [ "$ARCH" != "interactive" ] && [ -z "$ARCH" ]; then
         echo "Error: Invalid architecture. Please specify either 32 or 64."
         return 0
     fi
@@ -71,49 +71,119 @@ run_wine() {
     esac
 }
 
+usage() {
+    local MYACTION="$1"
+    echo "wine-tkg-docker - A Docker container for building and running wine-tkg"
+    echo ""
+    echo "Usage: $0 [action] [args]"
+    echo ""
+    if [ -z "$MYACTION" ]; then
+        echo "  Actions:"
+        echo ""
+        echo "    shell:  Start a /bin/bash shell"
+        echo "    build:  Start the build process"
+        echo "    wine32: Run wine-tkg 32-bit"
+        echo "    wine64: Run wine-tkg 64-bit"
+        echo "    wineshell: Run wine-tkg-interactive"
+        echo ""
+    fi
+    if [ "$MYACTION" == "shell" ]; then
+        echo "  Options (using shell action):"
+        echo ""
+        echo "    [command]: Command to run in the shell"
+        echo ""
+    fi
+    if [ "$MYACTION" == "build" ]; then
+        echo "  Optiions (using build action):"
+        echo ""
+        echo "    [args]: Arguments to pass to the build script"
+        echo ""
+    fi
+    if [ "$MYACTION" == "wine32" ] || [ "$MYACTION" == "wine64" ] || [ "$MYACTION" == "wineshell" ]; then
+        echo "  Options (using $MYACTION action):"
+        echo ""
+        echo "    [args]: Arguments to pass to wine-tkg or wine-tkg-interactive"
+        echo ""
+    fi
+    exit 1
+}
+
 parse_args() {
-    local ARGS=( $@ )
-    case "${ARGS[0]}" in
-        -h|--help)
-            echo "Usage: $0 [action] [args]"
-            echo ""
-            echo "  Actions:"
-            echo ""
-            echo "    shell:  Start a /bin/bash shell"
-            echo "    build:  Start the build process"
-            echo "    wine32: Run wine-tkg 32-bit"
-            echo "    wine64: Run wine-tkg 64-bit"
-            echo "    wineshell: Run wine-tkg-interactive"
-            echo ""
-            echo "  Additional Arguments [args]:"
-            echo ""
-            echo "    Any additional arguments will be passed to the action command's wine-tkg script"
-            exit 1
-            ;;
+    if [[ ! "$1" =~ ^shell|build|wine32|wine64|wineshell|$ ]]; then
+        echo "Unknown action: $1"
+        usage
+    else 
+        ACTION=$1
+        shift 1
+    fi
+    case "$ACTION" in
         shell)
-            BARGS=( ${ARGS[@]:1} )
-            echo "Starting Bash Shell"
-            ACTION=shell
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -h|--help)
+                        usage shell
+                        ;;
+                    *)
+                        BARGS+=("$1")
+                        ;;
+                esac
+                shift 1
+            done
             ;;
         build)
-            BARGS=( ${ARGS[@]:1} )
-            echo "Performing Build"
-            ACTION=build
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -h|--help)
+                        usage build
+                        ;;
+                    *)
+                        BARGS+=("$1")
+                        ;;
+                esac
+                shift 1
+            done
             ;;
         wine32)
-            BARGS=( ${ARGS[@]:1} )
-            echo "Running wine32"
-            ACTION=wine32
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -h|--help)
+                        usage wine32
+                        ;;
+                    *)
+                        BARGS+=("$1")
+                        ;;
+                esac
+                shift 1
+            done
             ;;
         wine64)
-            BARGS=( ${ARGS[@]:1} )
-            echo "Running wine64"
-            ACTION=wine64
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -h|--help)
+                        usage wine64
+                        ;;
+                    *)
+                        BARGS+=("$1")
+                        ;;
+                esac
+                shift 1
+            done
             ;;
         wineshell)
-            BARGS=( ${ARGS[@]:1} )
-            echo "Running wine-tkg-interactive"
-            ACTION=wineshell
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -h|--help)
+                        usage wineshell
+                        ;;
+                    *)
+                        BARGS+=("$1")
+                        ;;
+                esac
+                shift 1
+            done
+            ;;
+        *)
+            usage
             ;;
     esac
 }
@@ -128,7 +198,7 @@ main() {
             fi
             ;;
         build)
-            build_tkglitch_wine "${BARGS[@]}"
+            build_wine "${BARGS[@]}"
             ;;
         wine32)
             run_wine "32" "${BARGS[@]}"

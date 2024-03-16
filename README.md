@@ -24,7 +24,7 @@ And navigate to the project's directory, and make the run script executable.
 
 ```bash
 cd wine-tkg-docker
-chmod +x ./run.sh
+chmod +x ./tkwine-docker
 ```
 
 Now you can proceed to the next step of the instructions.
@@ -34,15 +34,15 @@ Now you can proceed to the next step of the instructions.
 The following command produces a docker image with ``./workdir`` as the directory to mount docker volumes:
 
 ```bash
-./run.sh init -w ./workdir
+./tkwine-docker init
 ```
 
 ## 3.  Run the build inside thecontainer
 
-The following command runs the build process.  (Always remember to specify the working directory with the -w|--workdir switch):
+The following command runs the build process:
 
 ```bash
-./run.sh build -w ./workdir
+./tkwine-docker build
 ```
 
 Provided everything went smoothly, check ``./workdir/wine-versions`` for the results.
@@ -51,8 +51,20 @@ Provided everything went smoothly, check ``./workdir/wine-versions`` for the res
 
 You can run:
 
-```
-./run.sh --help
+```bash
+./tkwine-docker --help
 ```
 
-If you'd like some measure of assistance.  Contributions to documentation for this project are welcome.  Perhaps this readme will exapnd as contributions come in...ribbit!
+to access the help page.  If you want options for a specific action, you can do:
+
+```bash
+./tkwine-docker <action> --help
+```
+
+Where ``<action>`` is the action listed from the help menu.
+
+## Asking A Question
+
+If you're still lost, visit our **Discussions** area and ask for help.  Please **DO NOT** ask for help on the issue tracker, and use the discussion area to ask end-user questions.  The issue tracker is specifically for bugs, feature requests, and code feedback.
+
+Contributions to documentation for this project are welcome.  Perhaps this readme will exapnd as contributions come in...ribbit!
